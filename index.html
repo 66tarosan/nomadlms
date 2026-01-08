@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nomad Dashboard Clean</title>
+
+  <link rel="stylesheet" href="./css/variables.css" />
+  <link rel="stylesheet" href="./css/base.css" />
+  <link rel="stylesheet" href="./css/panels.css" />
+
+  <!-- ✅ Log panel layout -->
+  <link rel="stylesheet" href="./css/logPanel.css" />
+  <!-- ✅ Tasks panel UI (new) -->
+  <link rel="stylesheet" href="./css/tasksPanel.css" />
+  <!-- ✅ World bar (shared) -->
+  <link rel="stylesheet" href="./css/worldBar.css" />
+</head>
+
+<body>
+  <!-- 🔐 Login guard（放最前面，避免閃一下畫面） -->
+  <script>
+    const classCode = localStorage.getItem("nomad.currentClassCode");
+    if (!classCode) window.location.href = "login.html";
+  </script>
+
+  <!-- Edge hints (clickable) -->
+  <div id="hintTop" class="edgeHint edgeHint--top is-active" role="button" tabindex="0">
+    <div class="edgeHint__glow edgeHint__glow--task"></div>
+    <div class="edgeHint__label">↑ 每日任務</div>
+  </div>
+
+  <div id="hintBottom" class="edgeHint edgeHint--bottom is-active" role="button" tabindex="0">
+    <div class="edgeHint__glow edgeHint__glow--summon"></div>
+    <div class="edgeHint__label">↓ 召喚門</div>
+  </div>
+
+  <!-- ✅ 3 panels: tasks -> log -> summon -->
+  <main id="snapRoot" class="snapRoot is-log" aria-label="Nomad Dashboard">
+
+    <!-- (1) TASKS panel -->
+    <section class="panel panel--tasks" data-panel="tasks">
+      <header class="panelHeader">
+        <div class="panelHeaderGrid">
+          <!-- LEFT -->
+          <div class="panelHeaderLeft">
+            <div>
+              <div class="kicker">DAILY</div>
+              <div class="title">任務板</div>
+              <div class="pillRow">
+                <div class="pill classCodePill">—</div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- CENTER -->
+          <div class="panelHeaderCenter">
+            <div class="worldBar" data-variant="tasks" aria-label="世界進度">
+              <div class="worldBar__side worldBar__side--current">
+                <div class="worldBadge">WORLD I</div>
+                <div class="worldName">現在世界</div>
+              </div>
+
+              <div class="worldBar__center">
+                <div class="worldProgress" role="progressbar" aria-valuenow="42" aria-valuemin="0" aria-valuemax="100">
+                  <div class="worldProgress__fill" style="width:42%"></div>
+                </div>
+                <div class="worldHint">距離下一世界還差 58%</div>
+              </div>
+
+              <div class="worldBar__side worldBar__side--next">
+                <div class="worldBadge is-next">WORLD II</div>
+                <div class="worldName">下一世界</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT -->
+          <div class="panelHeaderRight">
+            <button id="tasksResetAllBtn" class="tasksResetAllBtn" type="button">
+              <span class="tasksResetAllBtn__icon">🛠️</span>
+              <span class="tasksResetAllBtn__label">全部重置</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div class="tasksWrap">
+        <div class="tasksBoard">
+          <div class="tasksScroll">
+            <div id="tasksRoot"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- (2) LOG panel -->
+    <section class="panel panel--log" data-panel="log">
+      <header class="panelHeader panelHeader--log">
+        <div class="panelHeaderGrid">
+          <!-- LEFT -->
+          <div class="panelHeaderLeft">
+            <div>
+              <div class="kicker">CLASS</div>
+              <div class="title">課堂紀錄</div>
+              <div class="pillRow">
+                <div class="pill classCodePill">—</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CENTER -->
+          <div class="panelHeaderCenter">
+            <div class="worldBar" data-variant="log" aria-label="世界進度">
+              <div class="worldBar__side worldBar__side--current">
+                <div class="worldBadge">WORLD I</div>
+                <div class="worldName">現在世界</div>
+              </div>
+
+              <div class="worldBar__center">
+                <div class="worldProgress" role="progressbar" aria-valuenow="42" aria-valuemin="0" aria-valuemax="100">
+                  <div class="worldProgress__fill" style="width:42%"></div>
+                </div>
+                <div class="worldHint">本月推進：42%</div>
+              </div>
+
+              <div class="worldBar__side worldBar__side--next">
+                <div class="worldBadge is-next">WORLD II</div>
+                <div class="worldName">下一世界</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT -->
+          <div class="panelHeaderRight">
+            <div class="pillRow">
+              <button id="openSetupBtn" class="setupBtn" type="button">
+                <span class="setupBtn__icon">⚙️</span>
+                <span class="setupBtn__label">班級設定</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- ✅ Log panel layout -->
+      <div class="logLayout">
+
+        <!-- Left: Students -->
+        <aside class="studentsPane" aria-label="學生清單">
+          <div class="studentsPane__header">
+            <div class="studentsPane__title">學生</div>
+            <div class="studentsPane__meta">
+              <span id="teacherBadge" class="teacherBadge">—</span>
+              <span id="studentCount" class="studentCount">0</span>
+            </div>
+          </div>
+
+          <div id="studentsList" class="studentsList" role="list"></div>
+
+          <div class="studentsPane__hint">
+            點選學生只會高亮（MVP），目前不連動召喚門。
+          </div>
+        </aside>
+
+        <!-- Center: Log Main -->
+        <main class="logMain" aria-label="課堂紀錄區">
+          <div class="logMain__inner">
+
+            <!-- Top: Mode + quick actions -->
+            <section class="logCard">
+              <div class="logCard__header">
+                <div class="logCard__title">記錄操作</div>
+
+                <div class="modeRow" role="tablist" aria-label="紀錄模式">
+                  <button class="modePill is-active" type="button" data-mode="ts">師生</button>
+                  <button class="modePill" type="button" data-mode="ss">生生</button>
+                  <button class="modePill" type="button" data-mode="g">組+1</button>
+                </div>
+              </div>
+
+              <div class="logCard__body">
+                <div class="selectedLine">
+                  目前選取：<span id="selectedStudentText" class="mono">—</span>
+                  <span class="selectedHint">（師生/生生需要先選學生）</span>
+                </div>
+
+                <div class="actionGrid" aria-label="五力快捷鍵">
+                  <button class="skillBtn" type="button" data-skill="F">F 專心</button>
+                  <button class="skillBtn" type="button" data-skill="E">E 探索</button>
+                  <button class="skillBtn" type="button" data-skill="C">C 創意</button>
+                  <button class="skillBtn" type="button" data-skill="CO">CO 合作</button>
+                  <button class="skillBtn" type="button" data-skill="R">R 韌性</button>
+                </div>
+
+                <div id="logMsg" class="logMsg" role="status" aria-live="polite"></div>
+              </div>
+            </section>
+
+            <!-- Bottom: Mini log -->
+            <section class="logCard">
+              <div class="logCard__header">
+                <div class="logCard__title">最新紀錄</div>
+                <div class="miniActions">
+                  <button id="clearLogBtn" class="linkBtn" type="button">清空</button>
+                </div>
+              </div>
+
+              <div class="logCard__body">
+                <div id="miniLog" class="miniLog" aria-label="最新紀錄列表"></div>
+              </div>
+            </section>
+
+          </div>
+        </main>
+
+      </div>
+    </section>
+
+    <!-- (3) SUMMON panel -->
+    <section class="panel panel--summon" data-panel="summon">
+      <header class="panelHeader panelHeader--summon">
+        <div class="panelHeaderGrid">
+          <!-- LEFT -->
+          <div class="panelHeaderLeft">
+            <div>
+              <div class="kicker">SUMMON</div>
+              <div class="title">召喚門（空殼）</div>
+              <div class="pillRow">
+                <div class="pill classCodePill">—</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CENTER -->
+          <div class="panelHeaderCenter">
+            <div class="worldBar" data-variant="summon" aria-label="世界進度">
+              <div class="worldBar__side worldBar__side--current">
+                <div class="worldBadge">WORLD I</div>
+                <div class="worldName">現在世界</div>
+              </div>
+
+              <div class="worldBar__center">
+                <div class="worldProgress" role="progressbar" aria-valuenow="42" aria-valuemin="0" aria-valuemax="100">
+                  <div class="worldProgress__fill" style="width:42%"></div>
+                </div>
+                <div class="worldHint">能量會換代幣（僅鼓勵）</div>
+              </div>
+
+              <div class="worldBar__side worldBar__side--next">
+                <div class="worldBadge is-next">WORLD II</div>
+                <div class="worldName">下一世界</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT (empty for now) -->
+          <div class="panelHeaderRight"></div>
+        </div>
+      </header>
+
+      <div class="panelBody">Summon panel content</div>
+    </section>
+
+  </main>
+
+  <!-- Core scripts -->
+  <script src="./js/state.js"></script>
+  <script src="./js/dashboard.js"></script>
+
+  <!-- ✅ Log panel renderer -->
+  <script src="./js/logPanel.js"></script>
+
+  <!-- ✅ Tasks panel renderer (new) -->
+  <script src="./js/tasksPanel.js"></script>
+
+  <!-- ✅ tasks / log / summon header pill: classCode -->
+  <script>
+    (function(){
+      const code = localStorage.getItem("nomad.currentClassCode") || "—";
+      document.querySelectorAll(".classCodePill").forEach(el => {
+        el.textContent = code;
+      });
+    })();
+  </script>
+</body>
+</html>

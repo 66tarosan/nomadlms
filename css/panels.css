@@ -1,0 +1,300 @@
+/* Root that holds three panels vertically */
+.snapRoot{
+  position: relative;
+  height: 100%;
+  width: 100%;
+  display: grid;
+  grid-template-rows: var(--panelH) var(--panelH) var(--panelH);
+  transition: transform var(--t-slow) cubic-bezier(.2,.8,.2,1);
+  will-change: transform;
+  touch-action: none;              /* ✅ 讓拖曳手勢不被瀏覽器捲動吃掉 */
+  overscroll-behavior: contain;
+  user-select: none;
+  cursor: grab;
+}
+.snapRoot:active{ cursor: grabbing; }
+
+/* Panel states */
+.snapRoot.is-tasks{ transform: translateY(0); }
+.snapRoot.is-log{ transform: translateY(calc(-1 * var(--panelH))); }
+.snapRoot.is-summon{ transform: translateY(calc(-2 * var(--panelH))); }
+
+/* Panels */
+.panel{
+  height: var(--panelH);
+  width: 100vw;
+  position: relative;
+}
+
+.panel--tasks{
+  background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(246,246,246,1) 100%);
+}
+.panel--log{
+  background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(244,244,244,1) 100%);
+}
+.panel--summon{
+  background: radial-gradient(1200px 600px at 50% 10%, rgba(255,255,255,0.75) 0%, rgba(246,246,246,1) 60%);
+}
+
+/* ===========================
+   Edge hints (better UX)
+   - Default: compact arrow-only (doesn't block info)
+   - Peek: expands briefly to show text
+   =========================== */
+
+.edgeHint{
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 56px;
+  width: min(320px, calc(100vw - 40px));
+  display: grid;
+  place-items: center;
+  z-index: 99999;
+  pointer-events: auto;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Make them sit closer to the edge so they don't cover the header content */
+.edgeHint--top{ top: 28px; }
+.edgeHint--bottom{ bottom: 0px; }
+
+/* Glow: reduce by default (less blocking) */
+.edgeHint__glow{
+  position: absolute;
+  inset: -10px 0 auto 0;   /* was -18px */
+  height: 80px;            /* was 110px */
+  filter: blur(20px);
+  opacity: .55;            /* softer */
+  transition: opacity 220ms ease, height 220ms ease, inset 220ms ease;
+}
+
+.edgeHint--bottom .edgeHint__glow{ inset: auto 0 -10px 0; }
+
+.edgeHint__glow--task{
+  background: radial-gradient(80% 60% at 50% 100%, var(--taskGlow), rgba(255,255,255,0) 70%);
+}
+.edgeHint__glow--summon{
+  background: radial-gradient(80% 60% at 50% 0%, var(--summonGlow), rgba(255,140,0,0) 70%);
+}
+
+/* Label: base pill */
+.edgeHint__label{
+  position: relative;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(18,18,18,0.55);
+  background: rgba(255,255,255,0.78);
+  padding: 6px 10px;
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+
+  /* key for compact/peek */
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 280px;
+  transition:
+    max-width 220ms ease,
+    padding 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease,
+    opacity 220ms ease;
+}
+
+/* Hover (desktop only benefit) */
+.edgeHint:hover .edgeHint__label{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+}
+
+/* ✅ Default compact mode: show arrow only (because your text starts with ↑ / ↓) */
+.edgeHint.is-compact .edgeHint__label{
+  max-width: 28px;         /* crop to just the arrow */
+  padding: 6px 8px;
+  letter-spacing: 0;       /* arrow doesn't need spacing */
+}
+
+/* ✅ Peek mode: show full label temporarily */
+.edgeHint.is-peek .edgeHint__label{
+  max-width: 280px;
+  padding: 6px 10px;
+  letter-spacing: 0.14em;
+}
+
+/* Peek: slightly stronger glow so user notices (but still not blocking) */
+.edgeHint.is-peek .edgeHint__glow{
+  opacity: .8;
+  height: 90px;
+  inset: -12px 0 auto 0;
+}
+.edgeHint--bottom.is-peek .edgeHint__glow{
+  inset: auto 0 -12px 0;
+}
+
+/* If you want "active/inactive" control later */
+.edgeHint:not(.is-active){
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* ===== EdgeHint compact: show arrow only ===== */
+.edgeHint.is-compact{
+  width: 44px;     /* 圓形大小，可調 40~48 */
+  height: 44px;
+}
+
+.edgeHint.is-compact .edgeHint__label{
+  width: 60px;
+  height: 30px;
+  padding: 0;
+  border-radius: 999px;
+
+  /* 只顯示箭頭 */
+  font-size: 14px;
+  letter-spacing: 0;
+  text-transform: none;
+
+  /* 直接讓文字消失，靠 JS 文字內容的第一個字元(↑/↓)呈現 */
+  overflow: hidden;
+  white-space: nowrap;
+  text-indent: -9999px;   /* 隱藏整段文字 */
+  position: relative;
+}
+
+/* 用 pseudo-element 把箭頭放回來（永遠只顯示箭頭） */
+.edgeHint.is-compact .edgeHint__label::after{
+  content: "↑";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-indent: 0;
+}
+
+/* bottom hint 顯示 ↓ */
+.edgeHint--bottom.is-compact .edgeHint__label::after{
+  content: "↓";
+}
+
+/* ===== EdgeHint peek: temporarily expand ===== */
+.edgeHint.is-peek{
+  width: auto;
+  height: auto;
+}
+
+/* 還原 label 為正常 pill */
+.edgeHint.is-peek .edgeHint__label{
+  padding: 6px 10px;
+  text-indent: 0;        /* ⭐ 關鍵：把文字拉回來 */
+  overflow: visible;
+  white-space: nowrap;
+
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* peek 時不要顯示假箭頭 */
+.edgeHint.is-peek .edgeHint__label::after{
+  content: none;
+}
+
+/* ===========================
+   FIX: Tasks panel visual stacking
+   目的：讓任務卡真正「浮在整頁」
+   =========================== */
+
+/* 1️⃣ snapRoot 的 transform 會建立新的 stacking context
+   → tasks panel 必須自己拉出來 */
+.snapRoot.is-tasks{
+  overflow: visible;
+}
+
+/* 2️⃣ tasks panel 成為一個獨立的視覺層 */
+.panel--tasks{
+  position: relative;
+  z-index: 10;              /* 高於 log / summon */
+  overflow: visible !important;
+}
+
+/* 3️⃣ 關鍵：避免 panel 本身形成「看不見的裁切框」 */
+.panel--tasks{
+  contain: none;            /* 防止 layout/paint containment */
+}
+
+/* 4️⃣ panel 內的任何東西都不被限制 */
+.panel--tasks > *{
+  overflow: visible !important;
+}
+
+/* 5️⃣ Header 也不能吃到 glow */
+.panel--tasks .panelHeader{
+  position: relative;
+  z-index: 5;
+  overflow: visible !important;
+}
+
+/* 6️⃣ 保險：tasksGrid 永遠在最上層 */
+.panel--tasks .tasksGrid{
+  position: relative;
+  z-index: 20;
+}
+
+/* 7️⃣ 卡片本體再上一層（含 pseudo-element glow） */
+.panel--tasks .taskCard{
+  position: relative;
+  z-index: 30;
+}
+
+/* ===========================
+   Shared UI: Pills
+   Used in all panel headers
+   =========================== */
+
+.pillRow{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  min-width: 0; /* allow children to shrink if needed */
+  margin-left: -10px;   /* 往左 */
+  margin-top: 5px;
+}
+
+.pill{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 1px 10px ;
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  color: rgba(18,18,18,0.70);
+  background: rgba(255,255,255,0.78);
+  border: 1px solid rgba(0,0,0,0.10);
+  /* box-shadow: 0 6px 18px rgba(0,0,0,0.10);*/
+
+  white-space: nowrap;
+}
+
+@media (max-width: 560px){
+  .pillRow{ gap: 8px; }
+}
+
+.edgeHint{
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.edgeHint.is-active{
+  opacity: 1;
+  pointer-events: auto;
+}

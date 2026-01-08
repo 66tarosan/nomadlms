@@ -1,0 +1,13 @@
+:root{
+  --panelH: 100vh;
+
+  --t-mid: 220ms;
+  --t-slow: 520ms;
+
+  --taskGlow: rgba(110, 220, 160, 0.45);
+  --summonGlow: rgba(255, 140, 0, 0.35);
+
+  --text: rgba(18,18,18,0.92);
+  --muted: rgba(18,18,18,0.55);
+  --card: rgba(255,255,255,0.80);
+}

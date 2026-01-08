@@ -1,0 +1,76 @@
+html, body{
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  font-family: ui-sans-serif, system-ui, -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", Arial;
+  color: var(--text);
+  background: #f6f6f6;
+}
+
+*{ box-sizing: border-box; }
+
+.panelHeader{
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: 14px 18px 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.72));
+  backdrop-filter: saturate(120%) blur(2px);
+}
+
+.kicker{
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.title{
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+.panelBody{
+  padding: 18px;
+  opacity: .7;
+}
+
+/* ===========================
+   Panel Header: 3-column grid
+   Left (stack) | Center (worldBar) | Right (optional)
+   =========================== */
+
+.panelHeader .panelHeaderGrid{
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: 16px;
+}
+
+/* LEFT: vertical stack */
+.panelHeader .panelHeaderLeft{
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  min-width: 180px;
+}
+
+/* CENTER: worldBar fills remaining width */
+.panelHeader .panelHeaderCenter{
+  min-width: 0; /* crucial: allow worldBar to shrink properly */
+}
+
+/* RIGHT: optional slot */
+.panelHeader .panelHeaderRight{
+  min-width: 0;
+}
+
+/* ✅ If right slot is empty, don't reserve any visual space */
+.panelHeader .panelHeaderRight:empty{
+  display: none;
+}
+
+.panelHeader .panelHeaderCenter .worldBar{ margin-top: 0 !important; }
+

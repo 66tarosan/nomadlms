@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nomad Setup</title>
+
+  <link rel="stylesheet" href="./css/variables.css" />
+  <link rel="stylesheet" href="./css/base.css" />
+  <link rel="stylesheet" href="./css/setup.css" />
+</head>
+
+<body>
+  <script>
+    // 未登入：導回 login
+    const classCode = localStorage.getItem("nomad.currentClassCode");
+    if (!classCode) window.location.href = "login.html";
+  </script>
+
+  <main class="setupRoot">
+    <section class="setupCard">
+      <header class="setupHeader">
+        <div class="kicker">SETUP</div>
+        <h1 class="title">班級設定</h1>
+        <p class="sub">
+          目前班級：<span id="classCodeText" class="mono">—</span>
+        </p>
+      </header>
+
+      <form id="setupForm" class="setupForm">
+        <!-- Teacher -->
+        <label class="fieldLabel" for="teacherName">教師暱稱（建議：王老師）</label>
+        <input
+          id="teacherName"
+          class="textInput"
+          type="text"
+          autocomplete="name"
+          placeholder="王老師"
+          maxlength="20"
+        />
+
+        <!-- Students -->
+        <div class="row2">
+          <div>
+            <label class="fieldLabel" for="studentId">座號（可選）</label>
+            <input
+              id="studentId"
+              class="textInput"
+              type="text"
+              inputmode="numeric"
+              placeholder="01"
+              maxlength="3"
+            />
+          </div>
+
+          <div>
+            <label class="fieldLabel" for="studentName">姓名（必填）</label>
+
+            <!-- 姓名 + 加入學生 -->
+            <div class="nameWithBtn">
+              <input
+                id="studentName"
+                class="textInput"
+                type="text"
+                autocomplete="off"
+                placeholder="小明"
+                maxlength="20"
+              />
+              <button id="addStudentBtn" class="ghostBtn" type="button">
+                ＋ 加入學生
+              </button>
+            </div>
+
+            <!-- ✅ Enter 提示（固定寫在 HTML） -->
+            <div class="enterHint">
+              小提醒：在「姓名」欄按 Enter 可快速加入學生
+            </div>
+          </div>
+        </div>
+
+        <div id="msgBox" class="msgBox" role="status" aria-live="polite"></div>
+
+        <div class="listHeader">
+          <div class="fieldLabel">學生清單</div>
+          <button id="clearBtn" class="linkBtn" type="button">清空</button>
+        </div>
+
+        <ul id="studentList" class="studentList"></ul>
+
+        <div class="footHint">
+          小提醒：學生會自動去重（同座號或同姓名視為重複）。
+        </div>
+
+        <!-- 底部儲存 -->
+        <div class="bottomActions">
+          <button class="primaryBtn" type="submit">
+            儲存並回到 Dashboard
+          </button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="./js/setup.js"></script>
+</body>
+</html>

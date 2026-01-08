@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nomad Login</title>
+
+  <link rel="stylesheet" href="./css/variables.css" />
+  <link rel="stylesheet" href="./css/base.css" />
+  <link rel="stylesheet" href="./css/login.css" />
+</head>
+
+<body>
+  <main class="loginRoot">
+    <section class="loginCard" aria-label="Nomad Login">
+      <div class="loginHeader">
+        <div class="kicker">NOMAD</div>
+        <h1 class="title">登入</h1>
+        <p class="hint">請輸入班級代碼（會自動組合成：學校-班級-學年度）</p>
+      </div>
+
+      <form id="loginForm" class="loginForm" autocomplete="on">
+        <label class="fieldLabel" for="schoolCode">班級代碼</label>
+
+        <div class="codeRow" aria-label="Class Code Inputs">
+          <input
+            id="schoolCode"
+            name="schoolCode"
+            class="codeSeg codeSeg--school"
+            inputmode="latin"
+            autocapitalize="characters"
+            autocomplete="organization"
+            placeholder="學校英文簡稱"
+            maxlength="6"
+            aria-label="學校英文簡稱"
+          />
+          <span class="dash">-</span>
+          <input
+            id="className"
+            name="className"
+            class="codeSeg codeSeg--class"
+            inputmode="text"
+            autocomplete="off"
+            placeholder="班級(6A、601 )"
+            maxlength="6"
+            aria-label="班級"
+          />
+          <span class="dash">-</span>
+          <input
+            id="schoolYear"
+            name="schoolYear"
+            class="codeSeg codeSeg--year"
+            inputmode="numeric"
+            autocomplete="off"
+            placeholder="學年度(民國)"
+            maxlength="3"
+            aria-label="學年度"
+          />
+        </div>
+
+        <div id="errorBox" class="errorBox" role="alert" aria-live="polite"></div>
+
+        <button id="loginBtn" class="primaryBtn" type="submit">進入 Dashboard</button>
+
+        <div class="meta">
+          <div class="metaLine">
+            <span class="metaKey">範例</span>
+            <span class="metaVal">CQES-601-114</span>
+          </div>
+          <div class="metaLine">
+            <span class="metaKey">提示</span>
+            <span class="metaVal">學校英文簡稱會自動轉大寫</span>
+          </div>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="./js/login.js"></script>
+</body>
+</html>
