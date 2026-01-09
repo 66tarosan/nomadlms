@@ -294,6 +294,15 @@
   transition: opacity 220ms ease, transform 220ms ease;
 }
 
+/* ✅ edgeHint 不要攔截整個容器的點擊（容器會很大） */
+.edgeHint{ pointer-events: none; }
+
+/* ✅ 只有「真正看得到的 pill」可點 */
+.edgeHint .edgeHint__label{ pointer-events: auto; }
+
+/* ✅ glow 永遠不吃點擊 */
+.edgeHint .edgeHint__glow{ pointer-events: none; }
+
 .edgeHint.is-active{
   opacity: 1;
   pointer-events: auto;
