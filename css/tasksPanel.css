@@ -12,11 +12,16 @@
 
 /* ====== Panel wrappers ====== */
 .panel--tasks .tasksWrap{
-  height: calc(100vh - 72px);
+  /* ✅ NEW: take remaining height under header */
+  flex: 1 1 auto;
+  min-height: 0;
+
   padding: 0 !important;
   display: block;
   overflow: visible !important;
 }
+
+
 
 .panel--tasks .tasksBoard{
   height: 100%;
@@ -497,4 +502,10 @@
 .panel--tasks .tasksResetAllBtn:active{
   transform: translateY(0);
   opacity: .92;
+}
+
+.panel--tasks .tasksBoard,
+.panel--tasks .tasksScroll{
+  flex: 1 1 auto;
+  min-height: 0;
 }
