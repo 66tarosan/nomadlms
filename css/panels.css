@@ -24,6 +24,11 @@
   height: var(--panelH);
   width: 100vw;
   position: relative;
+
+  /* ✅ NEW: let header take its natural height, body fills the rest */
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* 很重要：避免子層 overflow 計算怪掉 */
 }
 
 .panel--tasks{
@@ -293,15 +298,6 @@
   pointer-events: none;
   transition: opacity 220ms ease, transform 220ms ease;
 }
-
-/* ✅ edgeHint 不要攔截整個容器的點擊（容器會很大） */
-.edgeHint{ pointer-events: none; }
-
-/* ✅ 只有「真正看得到的 pill」可點 */
-.edgeHint .edgeHint__label{ pointer-events: auto; }
-
-/* ✅ glow 永遠不吃點擊 */
-.edgeHint .edgeHint__glow{ pointer-events: none; }
 
 .edgeHint.is-active{
   opacity: 1;
