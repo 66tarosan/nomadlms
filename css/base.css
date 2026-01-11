@@ -74,3 +74,6 @@ html, body{
 
 .panelHeader .panelHeaderCenter .worldBar{ margin-top: 0 !important; }
 
+.panelHeader{
+  z-index: 1000;  /* 原本 5 太低，因為 tasks 卡牆你有 z-index 50/60 */
+}
