@@ -6,7 +6,8 @@
    - drag gesture: resistance + threshold + snap back
    - ✅ allow inner scroll areas (do not steal wheel/drag)
    - ✅ interactive elements are NOT drag starters (buttons/inputs/links...)
-   - ✅ edgeHint: compact by default, peek briefly (touch-safe)
+   - ✅ edgeHint: FULL pill only
+   - ✅ NEW: edgeHint auto-hide after 3s idle, reappear on activity / near-edge hover
    ========================================= */
 
 (function () {
@@ -25,7 +26,6 @@
   const SCROLL_GUARD_SELECTOR = ".js-scrollGuard";
 
   // ✅ Any interactive element should NOT start drag-to-switch-panels
-  // (you can also add data-no-drag on any container to force allow clicking inside)
   const INTERACTIVE_SELECTOR =
     'button, a, input, textarea, select, label, [role="button"], [contenteditable="true"], [data-no-drag]';
 
@@ -50,34 +50,30 @@
   }
 
   /* =========================================================
-     ✅ EdgeHint modes
-     - is-compact: arrow only (no blocking)
-     - is-peek: show full label briefly
+     ✅ EdgeHint: idle hide / wake
      ========================================================= */
 
-  function setHintMode(el, mode) {
-    if (!el) return;
-    el.classList.remove("is-compact", "is-peek");
-    if (mode) el.classList.add(mode);
+  const IDLE_HIDE_MS = 1000;
+  const EDGE_WAKE_ZONE_PX = 72; // 滑鼠靠近上緣/下緣 72px 視為 hover 到提示區
+  let idleTimer = null;
+
+  function setIdleHidden(hidden) {
+    [hintTop, hintBottom].forEach((h) => {
+      if (!h) return;
+      // 只對目前可見的 hint 生效
+      if (!h.classList.contains("is-active")) return;
+      h.classList.toggle("is-idleHidden", !!hidden);
+    });
   }
 
-  function ensureHintDefaults() {
-    // default compact whenever visible
-    setHintMode(hintTop, "is-compact");
-    setHintMode(hintBottom, "is-compact");
-  }
+  function resetIdleHide() {
+    // any activity => show immediately
+    setIdleHidden(false);
 
-  let peekTimer = null;
-  function peekHints(ms = 1400) {
-    if (peekTimer) clearTimeout(peekTimer);
-
-    // only peek visible hints
-    if (hintTop && hintTop.classList.contains("is-active")) setHintMode(hintTop, "is-peek");
-    if (hintBottom && hintBottom.classList.contains("is-active")) setHintMode(hintBottom, "is-peek");
-
-    peekTimer = setTimeout(() => {
-      ensureHintDefaults();
-    }, ms);
+    if (idleTimer) clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      setIdleHidden(true);
+    }, IDLE_HIDE_MS);
   }
 
   function updateHints(panel) {
@@ -88,26 +84,27 @@
     if (hintTop) {
       if (panel === "tasks") hintTop.classList.remove("is-active");
       else hintTop.classList.add("is-active");
+      hintTop.classList.remove("is-idleHidden");
     }
     if (hintBottom) {
       if (panel === "summon") hintBottom.classList.remove("is-active");
       else hintBottom.classList.add("is-active");
+      hintBottom.classList.remove("is-idleHidden");
     }
 
-    // set text (text starts with ↑ / ↓ so compact mode can show arrow-only)
+    // set text
     if (topLabel) {
       if (panel === "log") topLabel.textContent = "↑ 每日任務";
       else if (panel === "summon") topLabel.textContent = "↑ 課堂紀錄";
-      else topLabel.textContent = "↑";
+      else topLabel.textContent = "↑ 每日任務";
     }
     if (bottomLabel) {
       if (panel === "tasks") bottomLabel.textContent = "↓ 課堂紀錄";
       else if (panel === "log") bottomLabel.textContent = "↓ 召喚門";
-      else bottomLabel.textContent = "↓";
+      else bottomLabel.textContent = "↓ 召喚門";
     }
 
-    // always compact after updating
-    ensureHintDefaults();
+    resetIdleHide();
   }
 
   function setPanel(panel, reason = "panel-change") {
@@ -123,8 +120,8 @@
     window.DASH_STATE?.setState?.({ panel }, reason);
     updateHints(panel);
 
-    // ✅ For non-hint-click transitions, peek briefly so user understands navigation
-    if (reason !== "hint-click") peekHints(900);
+    // panel change counts as activity
+    resetIdleHide();
   }
 
   function step(delta, reason = "panel-step") {
@@ -141,12 +138,12 @@
   hintTop?.addEventListener("click", (e) => {
     e.preventDefault();
     step(-1, "hint-click");
-    peekHints(900);
+    resetIdleHide();
   });
   hintBottom?.addEventListener("click", (e) => {
     e.preventDefault();
     step(+1, "hint-click");
-    peekHints(900);
+    resetIdleHide();
   });
 
   /* =========================================================
@@ -155,14 +152,13 @@
 
   function closestScrollGuardEl(target) {
     if (!target || !target.closest) return null;
-    // studentsList is scroll-ish too; keep it here if you haven't added js-scrollGuard on it
     return target.closest(`${SCROLL_GUARD_SELECTOR}, .studentsList`);
   }
 
   function canScroll(el, deltaY) {
     if (!el) return false;
 
-    // If it can scroll horizontally, treat as "guard active" to prevent panel switching
+    // If it can scroll horizontally, treat as "guard active"
     const canX = el.scrollWidth > el.clientWidth;
     if (canX) return true;
 
@@ -186,8 +182,9 @@
   window.addEventListener(
     "wheel",
     (e) => {
+      resetIdleHide();
+
       if (wheelLock) return;
-      // ignore horizontal swipe
       if (Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
 
       const guardEl = closestScrollGuardEl(e.target);
@@ -199,7 +196,7 @@
       wheelAcc += e.deltaY;
 
       if (Math.abs(wheelAcc) >= WHEEL_THRESHOLD) {
-        const dir = wheelAcc > 0 ? +1 : -1; // down = +1, up = -1
+        const dir = wheelAcc > 0 ? +1 : -1;
         wheelAcc = 0;
         wheelLock = true;
         step(dir, "wheel-step");
@@ -221,14 +218,15 @@
     const EDGE_RESIST = 0.18;
 
     function onPointerDown(e) {
+      resetIdleHide();
+
       if (e.pointerType === "mouse" && e.button !== 0) return;
 
-      // ✅ 1) If clicking an interactive element, DO NOT start dragging
-      // This is the key fix for "buttons stop working on GitHub Pages / other browsers"
+      // ✅ interactive elements do not start drag
       const interactive = e.target?.closest?.(INTERACTIVE_SELECTOR);
       if (interactive) return;
 
-      // ✅ 2) If starting in a scroll-guard area, do not start dragging
+      // ✅ scroll guard area do not start drag
       const guardEl = closestScrollGuardEl(e.target);
       if (guardEl) return;
 
@@ -282,6 +280,7 @@
 
       pointerId = null;
       e.preventDefault();
+      resetIdleHide();
     }
 
     snapRoot.addEventListener("pointerdown", onPointerDown, { passive: false });
@@ -292,25 +291,42 @@
       if (dragging) {
         dragging = false;
         setPanel(getPanel(), "lost-pointer");
+        resetIdleHide();
       }
     });
   })();
+
+  /* =========================================================
+     ✅ Global activity => show hints again
+     - plus: near-edge hover wake (top/bottom zones)
+     ========================================================= */
+
+  window.addEventListener(
+    "mousemove",
+    (e) => {
+      // 只要動就算 activity（防止正在操作時突然隱藏）
+      resetIdleHide();
+
+      // 額外：靠近上緣/下緣就視為「hover 到提示區」
+      const y = e.clientY;
+      const H = window.innerHeight;
+      if (y <= EDGE_WAKE_ZONE_PX || y >= H - EDGE_WAKE_ZONE_PX) {
+        setIdleHidden(false);
+      }
+    },
+    { passive: true }
+  );
+
+  ["pointermove", "keydown", "touchstart"].forEach((evt) => {
+    window.addEventListener(evt, resetIdleHide, { passive: true });
+  });
 
   // init
   const initPanel = window.DASH_STATE?.getState?.().panel || "log";
   setPanel(initPanel, "init");
 
-  // first-time peek (touch-safe)
-  try {
-    const KEY = "nomad.edgeHints.peeked.v1";
-    const seen = localStorage.getItem(KEY);
-    if (!seen) {
-      setTimeout(() => {
-        peekHints(1400);
-        localStorage.setItem(KEY, "1");
-      }, 420);
-    }
-  } catch (_) {}
+  // start idle timer on load
+  resetIdleHide();
 
-  console.log("[dashboard] ready (wheel + drag + scrollGuard + edgeHint compact/peek)");
+  console.log("[dashboard] ready (wheel + drag + scrollGuard + edgeHint idleHide/fullPill)");
 })();
