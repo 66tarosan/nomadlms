@@ -42,9 +42,10 @@
 }
 
 /* ===========================
-   Edge hints (better UX)
-   - Default: compact arrow-only (doesn't block info)
-   - Peek: expands briefly to show text
+   Edge hints (FULL pill + idle hide)
+   - Always full label pill (no compact/peek)
+   - is-active: visible for current panel
+   - is-idleHidden: fade out after idle (JS controls)
    =========================== */
 
 .edgeHint{
@@ -56,22 +57,26 @@
   display: grid;
   place-items: center;
   z-index: 99999;
-  pointer-events: auto;
   cursor: pointer;
   user-select: none;
+
+  /* default hidden until is-active */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease, transform 220ms ease;
 }
 
-/* Make them sit closer to the edge so they don't cover the header content */
-.edgeHint--top{ top: 28px; }
+/* 你要調高低就是改這兩行 */
+.edgeHint--top{ top: 0px; }
 .edgeHint--bottom{ bottom: 0px; }
 
-/* Glow: reduce by default (less blocking) */
+/* Glow */
 .edgeHint__glow{
   position: absolute;
-  inset: -10px 0 auto 0;   /* was -18px */
-  height: 80px;            /* was 110px */
+  inset: -10px 0 auto 0;
+  height: 80px;
   filter: blur(20px);
-  opacity: .55;            /* softer */
+  opacity: .55;
   transition: opacity 220ms ease, height 220ms ease, inset 220ms ease;
 }
 
@@ -84,7 +89,7 @@
   background: radial-gradient(80% 60% at 50% 0%, var(--summonGlow), rgba(255,140,0,0) 70%);
 }
 
-/* Label: base pill */
+/* Label: always full pill */
 .edgeHint__label{
   position: relative;
   font-size: 12px;
@@ -96,114 +101,30 @@
   border-radius: 999px;
   box-shadow: 0 6px 18px rgba(0,0,0,0.10);
 
-  /* key for compact/peek */
-  overflow: hidden;
   white-space: nowrap;
   max-width: 280px;
-  transition:
-    max-width 220ms ease,
-    padding 220ms ease,
-    box-shadow 220ms ease,
-    transform 220ms ease,
-    opacity 220ms ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  transition: box-shadow 220ms ease, transform 220ms ease, opacity 220ms ease;
 }
 
-/* Hover (desktop only benefit) */
+/* Hover（桌機） */
 .edgeHint:hover .edgeHint__label{
   transform: translateY(-1px);
   box-shadow: 0 10px 24px rgba(0,0,0,0.12);
 }
 
-/* ✅ Default compact mode: show arrow only (because your text starts with ↑ / ↓) */
-.edgeHint.is-compact .edgeHint__label{
-  max-width: 28px;         /* crop to just the arrow */
-  padding: 6px 8px;
-  letter-spacing: 0;       /* arrow doesn't need spacing */
+/* ✅ visible */
+.edgeHint.is-active{
+  opacity: 1;
+  pointer-events: auto;
 }
 
-/* ✅ Peek mode: show full label temporarily */
-.edgeHint.is-peek .edgeHint__label{
-  max-width: 280px;
-  padding: 6px 10px;
-  letter-spacing: 0.14em;
-}
-
-/* Peek: slightly stronger glow so user notices (but still not blocking) */
-.edgeHint.is-peek .edgeHint__glow{
-  opacity: .8;
-  height: 90px;
-  inset: -12px 0 auto 0;
-}
-.edgeHint--bottom.is-peek .edgeHint__glow{
-  inset: auto 0 -12px 0;
-}
-
-/* If you want "active/inactive" control later */
-.edgeHint:not(.is-active){
-  pointer-events: none;
+/* ✅ idle hidden (JS toggles) */
+.edgeHint.is-active.is-idleHidden{
   opacity: 0;
-}
-
-/* ===== EdgeHint compact: show arrow only ===== */
-.edgeHint.is-compact{
-  width: 44px;     /* 圓形大小，可調 40~48 */
-  height: 44px;
-}
-
-.edgeHint.is-compact .edgeHint__label{
-  width: 60px;
-  height: 30px;
-  padding: 0;
-  border-radius: 999px;
-
-  /* 只顯示箭頭 */
-  font-size: 14px;
-  letter-spacing: 0;
-  text-transform: none;
-
-  /* 直接讓文字消失，靠 JS 文字內容的第一個字元(↑/↓)呈現 */
-  overflow: hidden;
-  white-space: nowrap;
-  text-indent: -9999px;   /* 隱藏整段文字 */
-  position: relative;
-}
-
-/* 用 pseudo-element 把箭頭放回來（永遠只顯示箭頭） */
-.edgeHint.is-compact .edgeHint__label::after{
-  content: "↑";
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  text-indent: 0;
-}
-
-/* bottom hint 顯示 ↓ */
-.edgeHint--bottom.is-compact .edgeHint__label::after{
-  content: "↓";
-}
-
-/* ===== EdgeHint peek: temporarily expand ===== */
-.edgeHint.is-peek{
-  width: auto;
-  height: auto;
-}
-
-/* 還原 label 為正常 pill */
-.edgeHint.is-peek .edgeHint__label{
-  padding: 6px 10px;
-  text-indent: 0;        /* ⭐ 關鍵：把文字拉回來 */
-  overflow: visible;
-  white-space: nowrap;
-
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-/* peek 時不要顯示假箭頭 */
-.edgeHint.is-peek .edgeHint__label::after{
-  content: none;
+  pointer-events: none;
 }
 
 /* ===========================
