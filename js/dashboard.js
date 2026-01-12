@@ -5,6 +5,7 @@
    - wheel threshold + lock (trackpad safe)
    - drag gesture: resistance + threshold + snap back
    - ✅ allow inner scroll areas (do not steal wheel/drag)
+   - ✅ interactive elements are NOT drag starters (buttons/inputs/links...)
    - ✅ edgeHint: compact by default, peek briefly (touch-safe)
    ========================================= */
 
@@ -20,8 +21,13 @@
 
   const PANELS = ["tasks", "log", "summon"];
 
-  // ✅ 任何內部可捲動區塊，請加上這個 class
+  // ✅ Any inner scrollable area should have this class
   const SCROLL_GUARD_SELECTOR = ".js-scrollGuard";
+
+  // ✅ Any interactive element should NOT start drag-to-switch-panels
+  // (you can also add data-no-drag on any container to force allow clicking inside)
+  const INTERACTIVE_SELECTOR =
+    'button, a, input, textarea, select, label, [role="button"], [contenteditable="true"], [data-no-drag]';
 
   function clampIndex(i) {
     return Math.max(0, Math.min(PANELS.length - 1, i));
@@ -63,10 +69,9 @@
 
   let peekTimer = null;
   function peekHints(ms = 1400) {
-    // brief expand, then back to compact
     if (peekTimer) clearTimeout(peekTimer);
 
-    // 只對「目前可見」的 hint 做 peek
+    // only peek visible hints
     if (hintTop && hintTop.classList.contains("is-active")) setHintMode(hintTop, "is-peek");
     if (hintBottom && hintBottom.classList.contains("is-active")) setHintMode(hintBottom, "is-peek");
 
@@ -75,36 +80,11 @@
     }, ms);
   }
 
-  function setPanel(panel, reason = "panel-change") {
-    if (!PANELS.includes(panel)) return;
-
-    snapRoot.classList.remove("is-tasks", "is-log", "is-summon");
-    snapRoot.classList.add(`is-${panel}`);
-
-    snapRoot.style.transform = "";
-    snapRoot.style.transition = "";
-
-    window.DASH_STATE?.setState?.({ panel }, reason);
-    updateHints(panel);
-
-    // ✅ 非 click 觸發（wheel / drag / init）才 peek
-    if (reason !== "hint-click") {
-      peekHints();
-    }
-  }
-
-  function step(delta) {
-    const cur = getPanel();
-    const next = PANELS[clampIndex(idxOf(cur) + delta)];
-    if (next !== cur) setPanel(next, "panel-step");
-    else setPanel(cur, "panel-clamp"); // 到頂到底回彈
-  }
-
   function updateHints(panel) {
     const topLabel = hintTop?.querySelector(".edgeHint__label");
     const bottomLabel = hintBottom?.querySelector(".edgeHint__label");
 
-    // ✅ 用 is-active 控制顯示/隱藏（比 display:none 更平滑，也更好做 peek）
+    // show/hide by is-active
     if (hintTop) {
       if (panel === "tasks") hintTop.classList.remove("is-active");
       else hintTop.classList.add("is-active");
@@ -114,11 +94,11 @@
       else hintBottom.classList.add("is-active");
     }
 
-    // 更新文字
+    // set text (text starts with ↑ / ↓ so compact mode can show arrow-only)
     if (topLabel) {
       if (panel === "log") topLabel.textContent = "↑ 每日任務";
       else if (panel === "summon") topLabel.textContent = "↑ 課堂紀錄";
-      else topLabel.textContent = "↑"; // fallback (rare)
+      else topLabel.textContent = "↑";
     }
     if (bottomLabel) {
       if (panel === "tasks") bottomLabel.textContent = "↓ 課堂紀錄";
@@ -126,8 +106,32 @@
       else bottomLabel.textContent = "↓";
     }
 
-    // 每次 panel 更新後，回到 compact（避免一直遮擋）
+    // always compact after updating
     ensureHintDefaults();
+  }
+
+  function setPanel(panel, reason = "panel-change") {
+    if (!PANELS.includes(panel)) return;
+
+    snapRoot.classList.remove("is-tasks", "is-log", "is-summon");
+    snapRoot.classList.add(`is-${panel}`);
+
+    // clear drag inline transform
+    snapRoot.style.transform = "";
+    snapRoot.style.transition = "";
+
+    window.DASH_STATE?.setState?.({ panel }, reason);
+    updateHints(panel);
+
+    // ✅ For non-hint-click transitions, peek briefly so user understands navigation
+    if (reason !== "hint-click") peekHints(900);
+  }
+
+  function step(delta, reason = "panel-step") {
+    const cur = getPanel();
+    const next = PANELS[clampIndex(idxOf(cur) + delta)];
+    if (next !== cur) setPanel(next, reason);
+    else setPanel(cur, "panel-clamp"); // bounce at ends
   }
 
   // expose for console
@@ -136,35 +140,40 @@
   /* ---------- hint click ---------- */
   hintTop?.addEventListener("click", (e) => {
     e.preventDefault();
-    step(-1);
-    peekHints(900); // 點了就短 peek 一下，強化「可導航」的回饋
+    step(-1, "hint-click");
+    peekHints(900);
   });
   hintBottom?.addEventListener("click", (e) => {
     e.preventDefault();
-    step(+1);
+    step(+1, "hint-click");
     peekHints(900);
   });
 
   /* =========================================================
      ✅ Scroll guard helpers
-     - 若事件發生在可捲動區中，優先捲動內容，不切 panel
      ========================================================= */
 
   function closestScrollGuardEl(target) {
-    if (!(target instanceof Element)) return null;
-    return target.closest(SCROLL_GUARD_SELECTOR);
+    if (!target || !target.closest) return null;
+    // studentsList is scroll-ish too; keep it here if you haven't added js-scrollGuard on it
+    return target.closest(`${SCROLL_GUARD_SELECTOR}, .studentsList`);
   }
 
-  function canScroll(el, dy) {
-    // dy > 0: 向下滾；dy < 0: 向上滾
+  function canScroll(el, deltaY) {
     if (!el) return false;
-    const maxScrollTop = el.scrollHeight - el.clientHeight;
-    if (maxScrollTop <= 0) return false;
+
+    // If it can scroll horizontally, treat as "guard active" to prevent panel switching
+    const canX = el.scrollWidth > el.clientWidth;
+    if (canX) return true;
+
+    const canY = el.scrollHeight > el.clientHeight;
+    if (!canY) return false;
 
     const top = el.scrollTop;
+    const max = el.scrollHeight - el.clientHeight;
 
-    if (dy > 0) return top < maxScrollTop; // 還能往下捲
-    if (dy < 0) return top > 0;            // 還能往上捲
+    if (deltaY < 0) return top > 0;
+    if (deltaY > 0) return top < max - 1;
     return false;
   }
 
@@ -174,44 +183,16 @@
   const WHEEL_THRESHOLD = 140;
   const WHEEL_LOCK_MS = 520;
 
-  /** 找到「可捲動守衛區」：tasks 卡牆 / studentsList 等 */
-  function closestScrollGuardEl2(target){
-    if(!target || !target.closest) return null;
-    // tasksScroll / tasksGrid / studentsList 都可以加 js-scrollGuard
-    return target.closest(".js-scrollGuard, .studentsList");
-  }
-
-  /** 判斷該元素在此方向是否「還能捲」 */
-  function canScroll2(el, deltaY){
-    if(!el) return false;
-
-    // 橫向卡牆：優先吃水平捲動（tasksGrid overflow-x）
-    const canX = el.scrollWidth > el.clientWidth;
-    const canY = el.scrollHeight > el.clientHeight;
-
-    // 只要有橫向可捲，就視為 guard 生效（避免切 panel）
-    if(canX) return true;
-
-    if(!canY) return false;
-
-    const top = el.scrollTop;
-    const max = el.scrollHeight - el.clientHeight;
-
-    if(deltaY < 0) return top > 0;        // 往上滾：還能往上
-    if(deltaY > 0) return top < max - 1;  // 往下滾：還能往下
-    return false;
-  }
-
   window.addEventListener(
     "wheel",
     (e) => {
       if (wheelLock) return;
-      if (Math.abs(e.deltaY) < Math.abs(e.deltaX)) return; // ignore horizontal
+      // ignore horizontal swipe
+      if (Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
 
-      // ✅ 如果滑在可捲動區，且該區還能捲 → 不切 panel
-      const guardEl = closestScrollGuardEl2(e.target);
-      if (guardEl && canScroll2(guardEl, e.deltaY)) {
-        wheelAcc = 0; // 防止累積到閾值突然切 panel
+      const guardEl = closestScrollGuardEl(e.target);
+      if (guardEl && canScroll(guardEl, e.deltaY)) {
+        wheelAcc = 0;
         return;
       }
 
@@ -221,7 +202,7 @@
         const dir = wheelAcc > 0 ? +1 : -1; // down = +1, up = -1
         wheelAcc = 0;
         wheelLock = true;
-        step(dir);
+        step(dir, "wheel-step");
         setTimeout(() => (wheelLock = false), WHEEL_LOCK_MS);
       }
     },
@@ -242,8 +223,13 @@
     function onPointerDown(e) {
       if (e.pointerType === "mouse" && e.button !== 0) return;
 
-      // ✅ 若起點在可捲動區，讓它做原生捲動，不啟動切 panel 拖曳
-      const guardEl = closestScrollGuardEl2(e.target);
+      // ✅ 1) If clicking an interactive element, DO NOT start dragging
+      // This is the key fix for "buttons stop working on GitHub Pages / other browsers"
+      const interactive = e.target?.closest?.(INTERACTIVE_SELECTOR);
+      if (interactive) return;
+
+      // ✅ 2) If starting in a scroll-guard area, do not start dragging
+      const guardEl = closestScrollGuardEl(e.target);
       if (guardEl) return;
 
       dragging = true;
@@ -291,7 +277,7 @@
       if (Math.abs(dy) < THRESHOLD) {
         setPanel(getPanel(), "drag-snapback");
       } else {
-        step(dy < 0 ? +1 : -1);
+        step(dy < 0 ? +1 : -1, "drag-step");
       }
 
       pointerId = null;
@@ -314,12 +300,11 @@
   const initPanel = window.DASH_STATE?.getState?.().panel || "log";
   setPanel(initPanel, "init");
 
-  // ✅ 首次進入：peek 一次（不影響觸控）
+  // first-time peek (touch-safe)
   try {
     const KEY = "nomad.edgeHints.peeked.v1";
     const seen = localStorage.getItem(KEY);
     if (!seen) {
-      // 先給一點點時間讓 layout 穩定
       setTimeout(() => {
         peekHints(1400);
         localStorage.setItem(KEY, "1");
