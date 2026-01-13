@@ -168,47 +168,53 @@
         <main class="logMain" aria-label="課堂紀錄區">
           <div class="logMain__inner">
 
-            <!-- Top: Mode + quick actions -->
+            <!-- Top: Record Actions -->
             <section class="logCard">
               <div class="logCard__header">
                 <div class="logCard__title">記錄操作</div>
-
-                <div class="modeRow" role="tablist" aria-label="紀錄模式">
-                  <button class="modePill is-active" type="button" data-mode="ts">師生</button>
-                  <button class="modePill" type="button" data-mode="ss">生生</button>
-                  <button class="modePill" type="button" data-mode="g">組+1</button>
+                <div class="miniActions">
+                  <button id="undoBtn" class="linkBtn" type="button" disabled>撤銷</button>
                 </div>
               </div>
 
               <div class="logCard__body">
                 <div class="selectedLine">
-                  目前選取：<span id="selectedStudentText" class="mono">—</span>
-                  <span class="selectedHint">（師生/生生需要先選學生）</span>
+                  目前選取：<span id="selectedTargetText" class="mono">—</span>
+                  <span id="selectedTargetHint" class="selectedHint">（請點選學生或組別）</span>
                 </div>
 
-                <div class="actionGrid" aria-label="五力快捷鍵">
-                  <button class="skillBtn" type="button" data-skill="F">F 專心</button>
-                  <button class="skillBtn" type="button" data-skill="E">E 探索</button>
-                  <button class="skillBtn" type="button" data-skill="C">C 創意</button>
-                  <button class="skillBtn" type="button" data-skill="CO">CO 合作</button>
-                  <button class="skillBtn" type="button" data-skill="R">R 韌性</button>
+                <!-- 個人按鈕（點到學生才顯示） -->
+                <div id="actionRowIndividual" class="actionRow" hidden>
+                  <button class="resultBtn" type="button" data-kind="ind" data-code="independent_success" data-delta="3">獨立成功 +3</button>
+                  <button class="resultBtn" type="button" data-kind="ind" data-code="guided_success" data-delta="2">引導成功 +2</button>
+                  <button class="resultBtn" type="button" data-kind="ind" data-code="guided_fail" data-delta="1">引導失敗 +1</button>
+                  <button class="resultBtn is-neg" type="button" data-kind="ind" data-code="give_up" data-delta="-1">放棄 -1</button>
+                </div>
+
+                <!-- 團體按鈕（點到組別才顯示） -->
+                <div id="actionRowGroup" class="actionRow" hidden>
+                  <button class="resultBtn" type="button" data-kind="grp" data-code="group_plus2" data-delta="2">+2</button>
+                  <button class="resultBtn" type="button" data-kind="grp" data-code="group_plus1" data-delta="1">+1</button>
+                  <button class="resultBtn is-neg" type="button" data-kind="grp" data-code="group_minus1" data-delta="-1">-1</button>
+                  <button class="resultBtn is-neg" type="button" data-kind="grp" data-code="group_minus2" data-delta="-2">-2</button>
                 </div>
 
                 <div id="logMsg" class="logMsg" role="status" aria-live="polite"></div>
               </div>
             </section>
 
-            <!-- Bottom: Mini log -->
+            <!-- Bottom: Group Progress (replace miniLog) -->
             <section class="logCard">
               <div class="logCard__header">
-                <div class="logCard__title">最新紀錄</div>
+                <div class="logCard__title">組別進度</div>
                 <div class="miniActions">
+                  <button id="editGroupsBtn" class="linkBtn" type="button">分組設定</button>
                   <button id="clearLogBtn" class="linkBtn" type="button">清空</button>
                 </div>
               </div>
 
               <div class="logCard__body">
-                <div id="miniLog" class="miniLog" aria-label="最新紀錄列表"></div>
+                <div id="groupBoard" class="groupBoard" aria-label="組別進度列表"></div>
               </div>
             </section>
 
