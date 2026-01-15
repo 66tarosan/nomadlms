@@ -1,0 +1,300 @@
+/* =========================================
+   logPanel-modal-v3.css
+   Enhanced styling for pill-based groups modal
+   ========================================= */
+
+/* ==========================================
+   Group Pill Buttons (在 modal 左側)
+   ========================================== */
+
+.groupPill {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.75);
+  color: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  user-select: none;
+  
+  transition: all 140ms ease;
+}
+
+.groupPill:hover {
+  border-color: rgba(0, 0, 0, 0.18);
+  background: rgba(255, 255, 255, 0.88);
+  transform: translateY(-1px);
+}
+
+.groupPill.is-selected {
+  border-color: rgba(0, 0, 0, 0.28);
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.14), rgba(79, 172, 254, 0.08));
+  border: 2px solid rgba(79, 172, 254, 0.4);
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(79, 172, 254, 0.15);
+}
+
+/* ==========================================
+   Student Pill Buttons (在 modal 右側)
+   ========================================== */
+
+.studentPill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  background: rgba(255, 255, 255, 0.75);
+  color: inherit;
+  
+  cursor: pointer;
+  user-select: none;
+  
+  transition: all 140ms ease;
+}
+
+.studentPill:hover {
+  border-color: rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.88);
+  transform: translateY(-1px);
+}
+
+.studentPill.is-selected {
+  border-color: rgba(34, 197, 94, 0.4);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(34, 197, 94, 0.06));
+  border: 2px solid rgba(34, 197, 94, 0.5);
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.12);
+}
+
+.studentPill.is-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: rgba(200, 200, 200, 0.2);
+  border-color: rgba(100, 100, 100, 0.15);
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.studentPill:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.studentPill__name {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.studentPill__no {
+  font-size: 11px;
+  opacity: 0.65;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================
+   Modal Layout - 2 columns with pills
+   ========================================== */
+
+.groupsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+@media (max-width: 860px) {
+  .groupsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.groupsCol {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.6);
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.groupsCol__title {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  font-weight: 600;
+}
+
+.groupsBoard {
+  padding: 12px;
+  overflow: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-content: flex-start;
+  max-height: 38vh;
+}
+
+.groupsStudentsList {
+  padding: 12px;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 8px;
+  max-height: 38vh;
+}
+
+.emptyHint {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 20px;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 13px;
+}
+
+/* ==========================================
+   Control Buttons (Top Row)
+   ========================================== */
+
+.groupsTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.groupsTopRow__left,
+.groupsTopRow__right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ==========================================
+   Form Controls
+   ========================================== */
+
+.fieldLabel {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.65;
+  font-weight: 500;
+}
+
+.fieldInput {
+  width: 60px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  
+  transition: border-color 120ms ease;
+}
+
+.fieldInput:focus {
+  outline: none;
+  border-color: rgba(79, 172, 254, 0.4);
+  box-shadow: 0 0 0 2px rgba(79, 172, 254, 0.1);
+}
+
+/* ==========================================
+   Action Buttons
+   ========================================== */
+
+.primaryBtn,
+.linkBtn {
+  border: none;
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  
+  transition: all 140ms ease;
+}
+
+.primaryBtn {
+  background: rgba(79, 172, 254, 0.12);
+  color: rgb(79, 172, 254);
+  border: 1px solid rgba(79, 172, 254, 0.3);
+}
+
+.primaryBtn:hover {
+  background: rgba(79, 172, 254, 0.20);
+  border-color: rgba(79, 172, 254, 0.5);
+  box-shadow: 0 2px 6px rgba(79, 172, 254, 0.15);
+}
+
+.primaryBtn:active {
+  background: rgba(79, 172, 254, 0.25);
+  transform: scale(0.98);
+}
+
+.linkBtn {
+  background: rgba(255, 255, 255, 0.5);
+  color: inherit;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  opacity: 0.85;
+}
+
+.linkBtn:hover {
+  background: rgba(255, 255, 255, 0.75);
+  opacity: 1;
+  border-color: rgba(0, 0, 0, 0.18);
+}
+
+.linkBtn.is-neg {
+  opacity: 0.7;
+}
+
+#saveGroupsBtn {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.08));
+  color: rgb(34, 197, 94);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  font-weight: 600;
+}
+
+#saveGroupsBtn:hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.25), rgba(34, 197, 94, 0.15));
+  border-color: rgba(34, 197, 94, 0.5);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
+}
+
+#saveGroupsBtn:active {
+  transform: scale(0.98);
+}
+
+/* ==========================================
+   Modal Footer with Save Button
+   ========================================== */
+
+.modal__foot {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 12px;
+  opacity: 0.6;
+  
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
