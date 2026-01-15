@@ -11,6 +11,8 @@
 
   <!-- ✅ Log panel layout -->
   <link rel="stylesheet" href="./css/logPanel.css" />
+  <!-- ✅ Modal v3 enhanced styling (pill buttons) -->
+  <link rel="stylesheet" href="./css/logPanel-modal-v3.css" />
   <!-- ✅ Tasks panel UI (new) -->
   <link rel="stylesheet" href="./css/tasksPanel.css" />
   <!-- ✅ World bar (shared) -->
@@ -212,6 +214,7 @@
                   <button id="clearLogBtn" class="linkBtn" type="button">清空</button>
                 </div>
               </div>
+              
 
               <div class="logCard__body">
                 <div id="groupBoard" class="groupBoard" aria-label="組別進度列表"></div>
@@ -271,11 +274,55 @@
 
   </main>
 
+  <!-- ✅ Groups Modal (MVP) -->
+              <div id="groupsModal" class="modal" hidden aria-hidden="true">
+                <div class="modal__backdrop" data-close="1"></div>
+
+                <div class="modal__card" role="dialog" aria-modal="true" aria-label="分組設定">
+                  <div class="modal__header">
+                    <div class="modal__title">分組設定</div>
+                    <button id="closeGroupsBtn" class="linkBtn" type="button">關閉</button>
+                  </div>
+
+                  <div class="modal__body">
+                    <div class="groupsTopRow">
+                      <div class="groupsTopRow__left">
+                        <label class="fieldLabel">組別數</label>
+                        <input id="groupCountInput" type="number" min="1" max="12" value="6" class="fieldInput" />
+                        <button id="applyGroupCountBtn" class="pillBtn" type="button">套用</button>
+                      </div>
+
+                      <div class="groupsTopRow__right">
+                        <button id="autoAssignBtn" class="pillBtn" type="button">自動分配</button>
+                        <button id="clearGroupsBtn" class="pillBtn is-neg" type="button">清空分組</button>
+                      </div>
+                    </div>
+
+                    <div class="groupsGrid">
+                      <section class="groupsCol">
+                        <div class="groupsCol__title">組別</div>
+                        <div id="groupsBoard" class="groupsBoard" aria-label="組別列表"></div>
+                      </section>
+
+                      <section class="groupsCol">
+                        <div class="groupsCol__title">學生</div>
+                        <div id="groupsStudentsList" class="groupsList" aria-label="學生列表"></div>
+                      </section>
+                    </div>
+
+                    <div class="modal__foot">
+                      <div class="muted">操作方式：1) 點擊左側組別 2) 點擊右側學生進行勾選/取消 3) 按「保存」確認分組</div>
+                      <button id="saveGroupsBtn" class="primaryBtn" type="button">✓ 保存</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
   <!-- Core scripts -->
   <script src="./js/state.js"></script>
   <script src="./js/dashboard.js"></script>
 
-  <!-- ✅ Log panel renderer -->
+  <!-- ✅ Log panel renderer (v3 with pill modal) -->
   <script src="./js/logPanel.js"></script>
 
   <!-- ✅ Tasks panel renderer (new) -->
@@ -290,5 +337,7 @@
       });
     })();
   </script>
+
+  
 </body>
 </html>
