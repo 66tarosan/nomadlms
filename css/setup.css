@@ -59,23 +59,8 @@
   opacity: .65;
 }
 
-.mono{
-  font-variant-numeric: tabular-nums;
-  letter-spacing: .06em;
-}
-
-/* =========================
-   Form
-   ========================= */
-
-.fieldLabel{
-  display: block;
-  font-size: 12px;
-  letter-spacing: .12em;
-  opacity: .7;
-  margin: 10px 0 8px;
-  text-transform: uppercase;
-}
+/* ✅ .mono moved to base.css */
+/* ✅ .fieldLabel moved to base.css */
 
 .textInput{
   width: 100%;
@@ -216,17 +201,7 @@
   z-index: 5;
 }
 
-.primaryBtn{
-  padding: 12px 14px;
-  border-radius: 999px;
-  border: none;
-  background: #111;
-  color: white;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.primaryBtn:hover{ opacity: .92; }
+/* ✅ .primaryBtn moved to base.css */
 
 .ghostBtn{
   padding: 12px 14px;
@@ -249,9 +224,4 @@
 
 /* =========================
    RWD
-   ========================= */
-
-@media (max-width: 560px){
-  .row2{ grid-template-columns: 1fr; }
-  .studentList{ max-height: 44vh; } /* 手機可稍微多一點 */
-}
+/* ✅ .linkBtn moved to base.css */
