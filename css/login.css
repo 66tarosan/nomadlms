@@ -33,14 +33,7 @@
   line-height: 1.45;
 }
 
-.fieldLabel{
-  display: block;
-  font-size: 12px;
-  letter-spacing: .12em;
-  opacity: .7;
-  margin: 8px 0 8px;
-  text-transform: uppercase;
-}
+/* ✅ .fieldLabel moved to base.css */
 
 .codeRow{
   display: grid;
@@ -86,21 +79,7 @@
   font-size: 13px;
 }
 
-.primaryBtn{
-  margin-top: 12px;
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 999px;
-  border: none;
-  background: #111;
-  color: white;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.primaryBtn:hover{
-  opacity: .92;
-}
+/* ✅ .primaryBtn moved to base.css */
 
 .meta{
   margin-top: 14px;
