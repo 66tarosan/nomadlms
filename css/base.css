@@ -13,7 +13,7 @@ html, body{
 .panelHeader{
   position: sticky;
   top: 0;
-  z-index: 5;
+  z-index: 1000;  /* ✅ FIX: 提高到 1000，因為 tasks 卡牆的 z-index 需要比這個高 */
   padding: 14px 18px 10px;
   background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.72));
   backdrop-filter: saturate(120%) blur(2px);
@@ -74,6 +74,55 @@ html, body{
 
 .panelHeader .panelHeaderCenter .worldBar{ margin-top: 0 !important; }
 
-.panelHeader{
-  z-index: 1000;  /* 原本 5 太低，因為 tasks 卡牆你有 z-index 50/60 */
+/* ✅ 通用表單標籤（login/setup/modal 共用） */
+.fieldLabel{
+  display: block;
+  font-size: 12px;
+  letter-spacing: .12em;
+  opacity: .7;
+  margin: 8px 0 8px;
+  text-transform: uppercase;
+}
+
+/* ✅ 通用主要按鈕 */
+.primaryBtn{
+  margin-top: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 999px;
+  border: none;
+  background: #111;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.primaryBtn:hover{
+  opacity: .92;
+}
+
+/* ✅ 通用連結按鈕 */
+.linkBtn{
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: inherit;
+  opacity: .72;
+  text-decoration: underline;
+}
+
+.linkBtn:hover{
+  opacity: .9;
+}
+
+.linkBtn:disabled{
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+/* ✅ 等寬字體（數字/代碼） */
+.mono{
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .06em;
 }
