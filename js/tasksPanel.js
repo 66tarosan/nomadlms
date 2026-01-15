@@ -43,7 +43,18 @@
     try {
       const raw = localStorage.getItem(KEY);
       if (!raw) {
-        return { classCode, createdAt: Date.now(), teacherName: "", students: [], tasks: [], log: [] };
+        return { 
+          classCode, 
+          createdAt: Date.now(), 
+          teacherName: "", 
+          students: [], 
+          tasks: [], 
+          log: [],
+          groups: [],
+          points: {},
+          packPoints: {},
+          groupPoints: {}
+        };
       }
       const d = JSON.parse(raw);
       return {
@@ -53,9 +64,24 @@
         students: Array.isArray(d.students) ? d.students : [],
         tasks: Array.isArray(d.tasks) ? d.tasks : [],
         log: Array.isArray(d.log) ? d.log : [],
+        groups: Array.isArray(d.groups) ? d.groups : [],
+        points: d.points && typeof d.points === "object" ? d.points : {},
+        packPoints: d.packPoints && typeof d.packPoints === "object" ? d.packPoints : {},
+        groupPoints: d.groupPoints && typeof d.groupPoints === "object" ? d.groupPoints : {}
       };
     } catch {
-      return { classCode, createdAt: Date.now(), teacherName: "", students: [], tasks: [], log: [] };
+      return { 
+        classCode, 
+        createdAt: Date.now(), 
+        teacherName: "", 
+        students: [], 
+        tasks: [], 
+        log: [],
+        groups: [],
+        points: {},
+        packPoints: {},
+        groupPoints: {}
+      };
     }
   }
 
@@ -69,17 +95,25 @@
   }
 
   // stable key used inside tasks lists
-  function studentKey(s) {
+  function studentKey(s, idx) {
+    // Match logPanel's makeStudentKey format: id::name::index
     const id = (s?.id || "").trim();
     const name = (s?.name || "").trim();
-    if (id) return `id:${id}`;
-    return `name:${name}`;
+    return `${id}::${name}::${idx ?? 0}`;
   }
 
   function getStudentNameByKey(state, key) {
     const students = state.students || [];
     if (!key) return "—";
 
+    // New format: id::name::index
+    if (key.includes("::")) {
+      const parts = key.split("::");
+      const name = parts[1] || "";
+      return name.trim() || "—";
+    }
+
+    // Legacy format support: id: or name:
     if (key.startsWith("id:")) {
       const id = key.slice(3);
       const hit = students.find((x) => (x.id || "").trim() === id);
@@ -116,7 +150,7 @@
 
   /* ---------- tasks seed / migration ---------- */
   function makeDefaultTasks(state) {
-    const studentKeys = (state.students || []).map(studentKey);
+    const studentKeys = (state.students || []).map((s, idx) => studentKey(s, idx));
 
     return [
       {
@@ -229,7 +263,7 @@
   // reconcile students change with existing tasks lists
   function reconcileTasksWithStudents(state) {
     const students = state.students || [];
-    const curKeys = new Set(students.map(studentKey));
+    const curKeys = new Set(students.map((s, idx) => studentKey(s, idx)));
 
     const tasks = Array.isArray(state.tasks) ? state.tasks : [];
     tasks.forEach((t) => {
@@ -260,7 +294,7 @@
     const task = (state.tasks || []).find((x) => x.id === taskId);
     if (!task) return false;
 
-    const keys = (state.students || []).map(studentKey);
+    const keys = (state.students || []).map((s, idx) => studentKey(s, idx));
 
     task.enabled = true;
     task.name = cleanTaskName(name);
@@ -276,7 +310,7 @@
     const task = (state.tasks || []).find((x) => x.id === taskId);
     if (!task) return false;
 
-    const keys = (state.students || []).map(studentKey);
+    const keys = (state.students || []).map((s, idx) => studentKey(s, idx));
 
     task.phaseClosed = false;
     task.onTime = [];
@@ -530,7 +564,26 @@
         task.phaseClosed = true;
         saveClassData(state);
 
+        console.log("[tasksPanel] Phase closed for task:", { taskId });
         showToast("已截止：之後完成視為超時");
+        
+        // Award +1 bonus to all students who completed on-time
+        if (window.nomadAddPoints && typeof window.nomadAddPoints === "function") {
+          const onTimeStudents = Array.isArray(task.onTime) ? task.onTime : [];
+          console.log("[tasksPanel] Awarding bonus to on-time students:", onTimeStudents);
+          try {
+            onTimeStudents.forEach((studentKey) => {
+              console.log("[tasksPanel] Awarding +1 bonus to:", studentKey);
+              window.nomadAddPoints(studentKey, 1);
+            });
+            console.log("[tasksPanel] Close-phase bonuses completed");
+          } catch (e) {
+            console.error("[tasksPanel] Error calling nomadAddPoints in close-phase:", e);
+          }
+        } else {
+          console.warn("[tasksPanel] window.nomadAddPoints not available during close-phase");
+        }
+        
         init();
       };
     });
@@ -557,7 +610,26 @@
         else task.onTime.push(skey);
 
         saveClassData(state);
+        console.log("[tasksPanel] Student marked done:", { skey, taskId });
+        
         showToast("已回報完成");
+        
+        // Call logPanel scoring function when student marks task complete
+        if (window.nomadAddPoints && typeof window.nomadAddPoints === "function") {
+          console.log("[tasksPanel] Calling nomadAddPoints...");
+          try {
+            window.nomadAddPoints(skey, 1);
+            console.log("[tasksPanel] nomadAddPoints completed successfully");
+          } catch (e) {
+            console.error("[tasksPanel] Error calling nomadAddPoints:", e);
+          }
+        } else {
+          console.warn("[tasksPanel] window.nomadAddPoints not available:", {
+            exists: !!window.nomadAddPoints,
+            isFunction: typeof window.nomadAddPoints === "function"
+          });
+        }
+        
         init();
       };
     });
