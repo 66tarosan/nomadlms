@@ -224,3 +224,36 @@
   opacity: 1;
   pointer-events: auto;
 }
+
+/* ===========================
+   Modal: hard guarantee overlay
+   (避免被 snapRoot transform 影響座標)
+   =========================== */
+.modal{
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 100000 !important; /* 比 edgeHint(99999) 再高 */
+  display: grid;
+  place-items: center;
+}
+
+.modal[hidden]{
+  display: none !important;
+}
+
+.modal__backdrop{
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.18);
+}
+
+.modal__card{
+  position: relative;
+  width: min(980px, calc(100vw - 28px));
+  max-height: min(86vh, calc(100vh - 28px));
+  overflow: auto;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 24px 70px rgba(0,0,0,0.18);
+}
