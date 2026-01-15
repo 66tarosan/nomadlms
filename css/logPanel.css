@@ -93,6 +93,12 @@
   box-shadow: 0 10px 22px rgba(0,0,0,0.08);
 }
 
+.studentRow.is-selected {
+  border-color: rgba(79, 172, 254, 0.5);
+  border: 2px solid rgba(79, 172, 254, 0.5);
+  background: rgba(79, 172, 254, 0.06);
+}
+
 .studentRow__no{
   font-variant-numeric: tabular-nums;
   opacity: .75;
@@ -182,10 +188,7 @@
   opacity: .6;
 }
 
-.mono{
-  font-variant-numeric: tabular-nums;
-  letter-spacing: .06em;
-}
+/* ✅ .mono moved to base.css */
 
 .logMsg{
   min-height: 18px;
@@ -201,19 +204,7 @@
   gap: 10px;
 }
 
-.linkBtn{
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  opacity: .7;
-  text-decoration: underline;
-}
-.linkBtn:hover{ opacity: .9; }
-.linkBtn:disabled{
-  opacity: .35;
-  cursor: not-allowed;
-  text-decoration: none;
-}
+/* ✅ .linkBtn moved to base.css */
 
 /* -------------------------
    NEW: Action rows + buttons
@@ -302,9 +293,10 @@
 }
 
 .groupCard.is-selected{
-  border-color: rgba(0,0,0,0.18);
+  border-color: rgba(79, 172, 254, 0.5);
+  border: 2px solid rgba(79, 172, 254, 0.5);
   box-shadow: 0 16px 32px rgba(0,0,0,0.10);
-  background: rgba(255,255,255,0.92);
+  background: rgba(79, 172, 254, 0.06);
 }
 
 .groupCard__top{
@@ -348,3 +340,163 @@
 @media (max-width: 860px){
   .logLayout{ grid-template-columns: 1fr; }
 }
+
+/* ===== Groups modal (MVP minimal) ===== */
+.modal[hidden]{ display:none; }
+.modal{ position: fixed; inset: 0; z-index: 100000; }
+
+.modal__backdrop{
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.25);
+}
+
+.modal__card{
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(980px, calc(100vw - 28px));
+  max-height: min(78vh, 720px);
+  overflow: auto;
+  background: rgba(255,255,255,0.96);
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 18px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.20);
+}
+
+.modal__header{
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.modal__title{
+  font-size: 13px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  opacity: .8;
+}
+
+.modal__body{ padding: 12px 14px; }
+.modal__foot{ margin-top: 10px; font-size: 12px; opacity: .6; }
+
+.groupsTopRow{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.groupsTopRow__left, .groupsTopRow__right{
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.fieldLabel{ font-size: 12px; opacity: .7; }
+.fieldInput{
+  width: 72px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: rgba(255,255,255,0.8);
+}
+
+.pillBtn{
+  border: 1px solid rgba(0,0,0,0.10);
+  background: rgba(255,255,255,0.7);
+  border-radius: 999px;
+  padding: 7px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  opacity: .85;
+}
+.pillBtn:hover{ opacity: 1; }
+.pillBtn.is-neg{ opacity: .85; }
+
+.groupsGrid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 860px){
+  .groupsGrid{ grid-template-columns: 1fr; }
+}
+
+.groupsCol{
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.72);
+  overflow: hidden;
+}
+.groupsCol__title{
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  font-size: 12px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  opacity: .7;
+}
+
+.groupsList{
+  max-height: 42vh;
+  overflow: auto;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.groupsStudent{
+  width: 100%;
+  text-align: left;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(255,255,255,0.75);
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.groupsStudent.is-picked{
+  border-color: rgba(0,0,0,0.18);
+  background: rgba(255,255,255,0.95);
+}
+
+.groupsGroup{
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(255,255,255,0.75);
+  padding: 10px 12px;
+}
+
+.groupsGroup__head{
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+.groupsGroup__name{ font-weight: 800; letter-spacing: .10em; opacity: .85; }
+.groupsGroup__meta{ font-size: 12px; opacity: .6; }
+
+.groupsGroup__members{
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.memberChip{
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.10);
+  background: rgba(255,255,255,0.65);
+  font-size: 12px;
+  opacity: .85;
+}
+
+.muted{ opacity: .65; }
